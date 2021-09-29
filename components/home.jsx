@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {FlatList,Text, View,TextInput, SafeAreaView,StyleSheet,ScrollView} from 'react-native'
-import { ListItem, Image } from 'react-native-elements';
+import { ListItem, Image, Button } from 'react-native-elements';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Users from './users';
-
+import firebase from './firebase';
 const Home = ({navigation}) =>{
     const [title,setTitle] = useState(' ')
     const [todo,setTodo] = useState([])
@@ -15,6 +15,7 @@ const Home = ({navigation}) =>{
         Users.createUsers(todo)
         .then(()=> console.log('task created'))
         .catch(err=> console.log(err))
+        setTitle(' ')
     }
     
  useEffect(()=>{
@@ -32,6 +33,7 @@ const Home = ({navigation}) =>{
          console.log(Todo)
      })
  },[])
+
  const displaytodo = ({item,index}) =>{
      return(
         <ScrollView>
@@ -48,10 +50,18 @@ const Home = ({navigation}) =>{
         </ScrollView>
      )
  }
+ const DeleteAll = () =>{
+    const db = firebase
+    db.ref('/todo').remove()
+    .then(alert('Your Task List Has been Cleared'))
+    setTitle('')
+    displaytodo()
+    
+ }
     return(
         <SafeAreaView>
-            <View style={styles.viewCover}>
-             <View style={{margin:8}} >   
+            <ScrollView style={styles.viewCover}>
+             <View style={{margin:8,height:1000}} >   
                 <Image source={require('../assets/pic.jpg') } style={{width:180,height:160,marginLeft:58,borderRadius:10}}>
                     </Image>
                     <Text style={{padding:4,margin:4,color:'black',fontSize:45,width:800}}>
@@ -61,13 +71,16 @@ const Home = ({navigation}) =>{
                     <TextInput value={title} onChangeText={(e)=>setTitle(e)} placeholder={'Create A New Task'} style={styles.textbox} />
                     <MaterialCommunityIcons name ={'plus'} size={35} color={'white'} style={{borderRadius:10,backgroundColor:'purple',padding:4,width:40,padding:4,marginTop:4,}}  onPress={createTodo} />
                </View>
-               <View>
+               <View >
                    {
                        todo && todo.length ? (
-                           <FlatList data={todo} renderItem={displaytodo}
-                           keyExtractor={item=> item.key}
-                           removeClippedSubviews={true}
-                           />
+                        <FlatList
+                           
+                        data={todo} renderItem={displaytodo}
+                        keyExtractor={item=> item.key}
+                        removeClippedSubviews={true}
+                        
+                        />
                        ):(
                            <View>
                                <Text style={{fontSize:25,padding:4,fontWeight:'600'}} >
@@ -76,9 +89,15 @@ const Home = ({navigation}) =>{
                             </View>
                        )
                    }
+                   <View>
+                        <Text style={{padding:4,fontWeight:'500',margin:4,fontSize:20,color:'red'}}>
+                            You have {todo.length} pending tasks
+                        </Text>
+                        <Button title={'Clear All'} onPress={DeleteAll} />
+                   </View>
                 </View>
               </View>  
-            </View>
+            </ScrollView>
         </SafeAreaView>
     )
 }
